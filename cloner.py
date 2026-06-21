@@ -19,6 +19,7 @@ from telethon.errors.rpcerrorlist import FileReferenceExpiredError
 from telethon.tl.types import (
     MessageMediaPhoto, MessageMediaDocument,
     InputMediaUploadedDocument, InputMediaUploadedPhoto,
+    MessageEntityMentionName,
 )
 
 from config import DOWNLOAD_DIR
@@ -86,8 +87,6 @@ def _human_size(nbytes: float) -> str:
     return f"{nbytes:.2f} TB"
 
 
-
-
 def _guess_filename(message) -> str:
     pre_name = "media"
     if message.document and hasattr(message.document, "attributes"):
@@ -97,6 +96,7 @@ def _guess_filename(message) -> str:
                 break
     return pre_name
 
+
 async def _safe_entities(client: TelegramClient, message):
     """
     strip out formatting entities telethon can't resolve (e.g. MentionName
@@ -105,8 +105,6 @@ async def _safe_entities(client: TelegramClient, message):
     """
     if not message.entities:
         return message.entities
-
-    from telethon.tl.types import MessageEntityMentionName
 
     safe = []
     for entity in message.entities:
@@ -121,6 +119,7 @@ async def _safe_entities(client: TelegramClient, message):
                 continue
         safe.append(entity)
     return safe
+
 
 def _should_skip_over_limit(message, limit_bytes: int) -> tuple[bool, int, str]:
     size_bytes = _file_size_from_message(message)
@@ -467,9 +466,9 @@ async def _clone_message(
         filename = await _download_and_reupload(
             client, message, dest_entity, caption, stats, progress_callback
         )
-elif caption:
-    safe_entities = await _safe_entities(client, message)
-    await client.send_message(dest_entity, caption, formatting_entities=safe_entities)
+    elif caption:
+        safe_entities = await _safe_entities(client, message)
+        await client.send_message(dest_entity, caption, formatting_entities=safe_entities)
 
     await _tracker_call(
         tracker,
@@ -505,7 +504,7 @@ async def _download_and_reupload(
 
     def _make_progress_cb(phase: str, fname: str):
         start_time = time.time()
-        
+
         def cb(current, total):
             elapsed = time.time() - start_time
             speed = current / elapsed if elapsed > 0 else 0
@@ -579,7 +578,6 @@ async def _fast_transfer(
             caption=caption,
             formatting_entities=safe_entities,
         )
-        )
         return filename
     finally:
         if os.path.exists(dl_path):
@@ -614,7 +612,7 @@ async def _standard_transfer(
     filename = Path(file_path).name
 
     try:
-    safe_entities = await _safe_entities(client, message)
+        safe_entities = await _safe_entities(client, message)
         await client.send_file(
             dest_entity,
             file_path,
@@ -625,7 +623,6 @@ async def _standard_transfer(
                 message.video_note, message.sticker, message.gif,
             ]),
             progress_callback=make_cb("uploading", filename),
-        )
         )
     finally:
         if os.path.exists(file_path):
