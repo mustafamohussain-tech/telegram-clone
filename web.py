@@ -13,10 +13,11 @@ from queue import Queue, Empty
 from flask import Flask, render_template, request, jsonify, Response
 
 from telethon import TelegramClient
+from telethon.sessions import StringSession
 from telethon.tl.types import Channel
 
 from config import (
-    API_ID, API_HASH, PHONE, SESSION_FILE, WEB_HOST, WEB_PORT,
+    API_ID, API_HASH, PHONE, SESSION_FILE, SESSION_STRING, WEB_HOST, WEB_PORT,
     NOTIFY_ON_ERROR, NOTIFY_ON_COMPLETE,
 )
 from tracker import create_tracker
@@ -62,15 +63,33 @@ def _start_telethon():
     _thread = threading.Thread(target=_worker, daemon=True)
     _thread.start()
 
-    _client = TelegramClient(SESSION_FILE, API_ID, API_HASH, loop=_loop)
+    # use StringSession if SESSION_STRING is set (server/Render),
+    # otherwise fall back to file-based session (local dev)
+    if SESSION_STRING:
+        log.info("using StringSession from SESSION_STRING env var")
+        session = StringSession(SESSION_STRING)
+    else:
+        log.info("using file-based session: %s", SESSION_FILE)
+        session = SESSION_FILE
 
-    async def _do_start():
-        await _client.start(phone=PHONE if PHONE else lambda: input("phone number: "))
+    _client = TelegramClient(session, API_ID, API_HASH, loop=_loop)
 
-    _run_async(_do_start())
+    async def _do_connect():
+        await _client.connect()
+        if not await _client.is_user_authorized():
+            raise RuntimeError(
+                "Telegram session is not authorized. "
+                "SESSION_STRING is missing, invalid, or expired — "
+                "generate a new one and update the SESSION_STRING env var."
+            )
+
+    _run_async(_do_connect())
 
     me = _run_async(_client.get_me())
-    log.info(f"telethon connected as {me.first_name} (@{me.username})")
+    if me:
+        log.info("telethon connected as %s (@%s)", me.first_name, me.username)
+    else:
+        log.info("telethon connected, but get_me() returned no user")
 
 
 async def _notify_self(text: str):
