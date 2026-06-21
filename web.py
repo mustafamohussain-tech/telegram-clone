@@ -168,12 +168,22 @@ def api_clone_start():
         data = request.get_json(force=True)
         source = data.get("source")
         dest = data.get("dest")
+        since_hours_raw = data.get("since_hours")
 
         if not source or not dest:
             return jsonify({"error": "source and dest are required"}), 400
 
         if str(source) == str(dest):
             return jsonify({"error": "source and dest can't be the same"}), 400
+
+        since_hours = None
+        if since_hours_raw not in (None, "", 0, "0"):
+            try:
+                since_hours = float(since_hours_raw)
+                if since_hours <= 0:
+                    since_hours = None
+            except (ValueError, TypeError):
+                return jsonify({"error": "since_hours must be a number"}), 400
 
         _current_job["running"] = True
         _current_job["stats"] = None
@@ -199,6 +209,7 @@ def api_clone_start():
                 tracker,
                 progress_callback=_broadcast_progress,
                 stop_event=_stop_event,
+                since_hours=since_hours,
             ))
 
             _current_job["stats"] = stats
