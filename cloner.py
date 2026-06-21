@@ -97,6 +97,30 @@ def _guess_filename(message) -> str:
                 break
     return pre_name
 
+async def _safe_entities(client: TelegramClient, message):
+    """
+    strip out formatting entities telethon can't resolve (e.g. MentionName
+    entities pointing at users telethon has never 'seen'). prevents
+    'Could not find the input entity for PeerUser(...)' crashes.
+    """
+    if not message.entities:
+        return message.entities
+
+    from telethon.tl.types import MessageEntityMentionName
+
+    safe = []
+    for entity in message.entities:
+        if isinstance(entity, MessageEntityMentionName):
+            try:
+                await client.get_input_entity(entity.user_id)
+            except (ValueError, TypeError):
+                log.debug(
+                    "dropping unresolvable mention entity for user_id=%s",
+                    entity.user_id,
+                )
+                continue
+        safe.append(entity)
+    return safe
 
 def _should_skip_over_limit(message, limit_bytes: int) -> tuple[bool, int, str]:
     size_bytes = _file_size_from_message(message)
