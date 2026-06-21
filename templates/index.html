@@ -144,6 +144,29 @@
             border-color: var(--accent);
         }
 
+        .select-group input[type="number"] {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .select-group input[type="number"]:focus {
+            border-color: var(--accent);
+        }
+
+        .select-group .hint {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
         /* buttons */
         .btn-row {
             display: flex;
@@ -496,6 +519,11 @@
                     <option value="">loading channels...</option>
                 </select>
             </div>
+            <div class="select-group">
+                <label for="sinceHoursInput">only clone messages from the last (hours)</label>
+                <input type="number" id="sinceHoursInput" min="0" step="1" placeholder="leave empty for full history">
+                <div class="hint">e.g. 24 = only messages from the last 24 hours. leave blank to clone everything.</div>
+            </div>
             <div class="btn-row">
                 <button class="btn btn-primary" id="startBtn" disabled onclick="startClone()">start clone</button>
                 <button class="btn btn-danger" id="stopBtn" disabled onclick="stopClone()">stop</button>
@@ -706,6 +734,8 @@
         async function startClone() {
             const source = $('sourceSelect').value;
             const dest = $('destSelect').value;
+            const sinceHoursRaw = $('sinceHoursInput').value;
+            const since_hours = sinceHoursRaw ? Number(sinceHoursRaw) : null;
 
             if (!source || !dest) return alert('pick both channels');
             if (source === dest) return alert('source and dest must be different');
@@ -719,7 +749,7 @@
                 const res = await fetch('/api/clone/start', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ source, dest }),
+                    body: JSON.stringify({ source, dest, since_hours }),
                 });
 
                 const data = await res.json();
