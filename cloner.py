@@ -176,8 +176,14 @@ async def clone_channel(
     retry_delay: float = 5.0,
     follow: bool = True,
     follow_poll_interval: float = 5.0,
+    since_hours: float | None = None,
 ):
-    """clone all messages from source channel to dest channel."""
+    """clone all messages from source channel to dest channel.
+
+    if since_hours is set, only messages newer than (now - since_hours)
+    are cloned from the existing history. new messages that arrive
+    afterward (follow mode) are always cloned regardless of this filter.
+    """
 
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     removed = _cleanup_download_dir(DOWNLOAD_DIR)
@@ -193,6 +199,12 @@ async def clone_channel(
 
     log.info(f"source: {getattr(source_entity, 'title', source)} (id: {source_id})")
     log.info(f"dest:   {getattr(dest_entity, 'title', dest)}")
+
+    cutoff_dt = None
+    if since_hours is not None and since_hours > 0:
+        from datetime import timedelta
+        cutoff_dt = datetime.now(timezone.utc) - timedelta(hours=since_hours)
+        log.info(f"only cloning messages newer than {cutoff_dt.isoformat()} ({since_hours}h)")
 
     # grab total message count before iterating
     history = await client.get_messages(source_entity, limit=0)
@@ -244,6 +256,12 @@ async def clone_channel(
         stats["current_msg"] = msg_id
         stats["processed"] += 1
         stats["file_progress"] = None
+
+        if cutoff_dt is not None and message.date is not None and message.date < cutoff_dt:
+            stats["skipped"] += 1
+            if progress_callback:
+                progress_callback(stats.copy())
+            return True
 
         if await _tracker_call(tracker, "is_cloned", source_id, msg_id):
             stats["skipped"] += 1
@@ -308,6 +326,12 @@ async def clone_channel(
         return True
 
     async for message in client.iter_messages(source_entity, reverse=False):
+        if cutoff_dt is not None and message.date is not None and message.date < cutoff_dt:
+            log.info(
+                "reached messages older than cutoff (%s) — stopping history scan",
+                cutoff_dt.isoformat(),
+            )
+            break
         ok = await _process_message(message)
         if not ok:
             break
