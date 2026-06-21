@@ -467,8 +467,9 @@ async def _clone_message(
         filename = await _download_and_reupload(
             client, message, dest_entity, caption, stats, progress_callback
         )
-    elif caption:
-        await client.send_message(dest_entity, caption, formatting_entities=message.entities)
+elif caption:
+    safe_entities = await _safe_entities(client, message)
+    await client.send_message(dest_entity, caption, formatting_entities=safe_entities)
 
     await _tracker_call(
         tracker,
@@ -571,11 +572,13 @@ async def _fast_transfer(
             attributes=attributes,
             force_file=False,
         )
+        safe_entities = await _safe_entities(client, message)
         await client.send_file(
             dest_entity,
             file=media,
             caption=caption,
-            formatting_entities=message.entities,
+            formatting_entities=safe_entities,
+        )
         )
         return filename
     finally:
@@ -603,23 +606,26 @@ async def _standard_transfer(
     if not file_path:
         _cleanup_new_downloads(pre_existing, DOWNLOAD_DIR)
         if caption:
-            await client.send_message(dest_entity, caption, formatting_entities=message.entities)
+            safe_entities = await _safe_entities(client, message)
+            await client.send_message(dest_entity, caption, formatting_entities=safe_entities)
         return None
 
     file_path = str(file_path)
     filename = Path(file_path).name
 
     try:
+    safe_entities = await _safe_entities(client, message)
         await client.send_file(
             dest_entity,
             file_path,
             caption=caption,
-            formatting_entities=message.entities,
+            formatting_entities=safe_entities,
             force_document=message.document is not None and not any([
                 message.video, message.audio, message.voice,
                 message.video_note, message.sticker, message.gif,
             ]),
             progress_callback=make_cb("uploading", filename),
+        )
         )
     finally:
         if os.path.exists(file_path):
