@@ -14,6 +14,8 @@ SOURCE_CHANNEL = os.getenv("SOURCE_CHANNEL", "")
 DEST_CHANNEL = os.getenv("DEST_CHANNEL", "")
 
 SESSION_FILE = str(BASE_DIR / "rogue_helix")
+SESSION_STRING = os.getenv("SESSION_STRING", "")
+
 TRACKER_FILE = str(BASE_DIR / "clone_tracker.json")
 DOWNLOAD_DIR = str(BASE_DIR / "downloads")
 
