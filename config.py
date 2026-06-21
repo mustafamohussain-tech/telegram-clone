@@ -28,7 +28,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
 WEB_HOST = os.getenv("WEB_HOST", "0.0.0.0")
-WEB_PORT = int(os.getenv("WEB_PORT", "5000"))
+WEB_PORT = int(os.getenv("PORT", os.getenv("WEB_PORT", "5000")))
 
 NOTIFY_ON_ERROR = os.getenv("NOTIFY_ON_ERROR", "true").lower() in ("true", "1", "yes")
 NOTIFY_ON_COMPLETE = os.getenv("NOTIFY_ON_COMPLETE", "true").lower() in ("true", "1", "yes")
