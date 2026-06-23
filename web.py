@@ -21,7 +21,7 @@ from config import (
     NOTIFY_ON_ERROR, NOTIFY_ON_COMPLETE,
 )
 from tracker import create_tracker
-from cloner import clone_channel
+from cloner import clone_channel, LiveForwarder, start_live_forward, stop_live_forward
 
 logging.basicConfig(
     level=logging.INFO,
@@ -43,6 +43,11 @@ _job_lock = threading.Lock()
 _stop_event: asyncio.Event = None
 _progress_queues: list[Queue] = []
 _current_job = {"running": False, "stats": None, "last_stats": None}
+
+# -- live forwarding state --
+_forwarder = LiveForwarder()
+_forward_lock = threading.Lock()
+_forward_progress_queues: list[Queue] = []
 
 
 def _run_async(coro):
@@ -104,6 +109,15 @@ def _broadcast_progress(stats: dict):
     """push progress update to all connected SSE clients."""
     _current_job["last_stats"] = stats
     for q in _progress_queues[:]:
+        try:
+            q.put_nowait(stats)
+        except Exception:
+            pass
+
+
+def _broadcast_forward_progress(stats: dict):
+    """push live-forwarding progress to all connected SSE clients."""
+    for q in _forward_progress_queues[:]:
         try:
             q.put_nowait(stats)
         except Exception:
@@ -269,6 +283,94 @@ def api_clone_progress():
         finally:
             if q in _progress_queues:
                 _progress_queues.remove(q)
+
+    return Response(stream(), mimetype="text/event-stream")
+
+
+@app.route("/api/forward/start", methods=["POST"])
+def api_forward_start():
+    with _forward_lock:
+        if _forwarder.running:
+            return jsonify({"error": "live forwarding is already running"}), 409
+
+        data = request.get_json(force=True)
+        sources = data.get("sources")
+        dest = data.get("dest")
+
+        if not sources or not isinstance(sources, list):
+            return jsonify({"error": "sources must be a non-empty list"}), 400
+        if not dest:
+            return jsonify({"error": "dest is required"}), 400
+        if len(sources) > 30:
+            return jsonify({"error": "max 30 source channels supported"}), 400
+
+        try:
+            source_ids = [int(s) for s in sources]
+        except (ValueError, TypeError):
+            return jsonify({"error": "all source ids must be numeric"}), 400
+
+        try:
+            dest_id = int(dest)
+        except (ValueError, TypeError):
+            dest_id = dest
+
+        if dest_id in source_ids:
+            return jsonify({"error": "destination can't also be a source"}), 400
+
+        try:
+            tracker = create_tracker()
+            _run_async(start_live_forward(
+                _client,
+                source_ids,
+                dest_id,
+                tracker,
+                _forwarder,
+                progress_callback=_broadcast_forward_progress,
+            ))
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"message": "live forwarding started", "sources": source_ids})
+
+
+@app.route("/api/forward/stop", methods=["POST"])
+def api_forward_stop():
+    with _forward_lock:
+        if not _forwarder.running:
+            return jsonify({"error": "live forwarding isn't running"}), 404
+        _run_async(asyncio.sleep(0))  # ensure loop context
+        stop_live_forward(_client, _forwarder)
+
+    return jsonify({"message": "live forwarding stopped"})
+
+
+@app.route("/api/forward/status")
+def api_forward_status():
+    return jsonify({
+        "running": _forwarder.running,
+        "stats": _forwarder.stats,
+    })
+
+
+@app.route("/api/forward/progress")
+def api_forward_progress():
+    """SSE endpoint — streams live-forwarding progress to the browser."""
+    q = Queue()
+    _forward_progress_queues.append(q)
+
+    def stream():
+        try:
+            while True:
+                try:
+                    stats = q.get(timeout=30)
+                    yield f"data: {json.dumps(stats)}\n\n"
+                except Empty:
+                    yield f"data: {json.dumps({'heartbeat': True})}\n\n"
+        except GeneratorExit:
+            pass
+        finally:
+            if q in _forward_progress_queues:
+                _forward_progress_queues.remove(q)
 
     return Response(stream(), mimetype="text/event-stream")
 
