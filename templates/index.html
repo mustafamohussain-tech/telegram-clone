@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,943 +7,373 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --bg: #0a0a0f;
-            --surface: #12121a;
-            --surface-2: #1a1a26;
-            --border: #2a2a3a;
-            --text: #e4e4ec;
-            --text-dim: #8888a0;
-            --accent: #7c5cfc;
-            --accent-glow: rgba(124, 92, 252, 0.25);
-            --green: #34d399;
-            --red: #f87171;
-            --amber: #fbbf24;
-            --radius: 12px;
+            --bg: #0a0a0f; --surface: #12121a; --surface-2: #1a1a26;
+            --border: #2a2a3a; --text: #e4e4ec; --text-dim: #8888a0;
+            --accent: #7c5cfc; --accent-glow: rgba(124,92,252,0.25);
+            --green: #34d399; --red: #f87171; --amber: #fbbf24; --radius: 12px;
         }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.5;
-        }
-
-        .container {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        /* header */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), #a78bfa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.02em;
-        }
-
-        .status-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            border-radius: 100px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            background: var(--surface);
-            border: 1px solid var(--border);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--red);
-        }
-
-        .status-dot.online {
-            background: var(--green);
-            box-shadow: 0 0 8px var(--green);
-        }
-
-        /* cards */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .card-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-dim);
-            margin-bottom: 16px;
-        }
-
-        /* channel selector */
-        .select-group {
-            margin-bottom: 16px;
-        }
-
-        .select-group label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--text-dim);
-            margin-bottom: 6px;
-        }
-
-        .select-group select {
-            width: 100%;
-            padding: 10px 14px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.9rem;
-            cursor: pointer;
-            outline: none;
-            appearance: none;
-            -webkit-appearance: none;
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
+        .container { max-width: 720px; margin: 0 auto; padding: 40px 20px; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+        .header h1 { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em; }
+        .status-badge { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 100px; font-size: 0.8rem; font-weight: 500; background: var(--surface); border: 1px solid var(--border); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+        .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+        .card-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 16px; }
+        .field-label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-dim); margin-bottom: 6px; }
+        .field-group { margin-bottom: 16px; }
+        select {
+            width: 100%; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.9rem; cursor: pointer;
+            outline: none; appearance: none; -webkit-appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888a0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            transition: border-color 0.2s;
+            background-repeat: no-repeat; background-position: right 12px center; transition: border-color 0.2s;
         }
-
-        .select-group select:focus {
-            border-color: var(--accent);
-        }
-
-        .select-group select:hover {
-            border-color: var(--accent);
-        }
-
-        .select-group input[type="number"] {
-            width: 100%;
-            padding: 10px 14px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .select-group input[type="number"]:focus {
-            border-color: var(--accent);
-        }
-
-        .select-group .hint {
-            font-size: 0.72rem;
-            color: var(--text-dim);
-            margin-top: 6px;
-        }
-
-        /* buttons */
-        .btn-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            outline: none;
-        }
-
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: #6b4ce0;
-            box-shadow: 0 0 30px var(--accent-glow);
-            transform: translateY(-1px);
-        }
-
-        .btn-danger {
-            background: rgba(248, 113, 113, 0.15);
-            color: var(--red);
-            border: 1px solid rgba(248, 113, 113, 0.3);
-        }
-
-        .btn-danger:hover:not(:disabled) {
-            background: rgba(248, 113, 113, 0.25);
-        }
-
-        /* progress */
-        .progress-wrap {
-            margin-bottom: 20px;
-        }
-
-        .progress-bar-outer {
-            width: 100%;
-            height: 6px;
-            background: var(--surface-2);
-            border-radius: 100px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-
-        .progress-bar-inner {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), #a78bfa);
-            border-radius: 100px;
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
-        }
-
-        .stat-box {
-            text-align: center;
-            padding: 14px 8px;
-            background: var(--surface-2);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .stat-label {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-top: 2px;
-        }
-
-        .stat-value.green {
-            color: var(--green);
-        }
-
-        .stat-value.amber {
-            color: var(--amber);
-        }
-
-        .stat-value.red {
-            color: var(--red);
-        }
-
-        /* job status */
-        .job-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            background: var(--surface-2);
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-            border: 1px solid var(--border);
-        }
-
-        .job-status .pulse {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--accent);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-                box-shadow: 0 0 0 0 var(--accent-glow);
-            }
-
-            50% {
-                opacity: 0.7;
-                box-shadow: 0 0 0 8px transparent;
-            }
-        }
-
-        .job-status.idle .pulse {
-            background: var(--text-dim);
-            animation: none;
-        }
-
-        .job-status.done .pulse {
-            background: var(--green);
-            animation: none;
-        }
-
-        .job-status.error .pulse {
-            background: var(--red);
-            animation: none;
-        }
-
-        /* file transfer progress */
-        .file-progress {
-            display: none;
-            margin-bottom: 16px;
-            padding: 14px 16px;
-            background: var(--surface-2);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .file-progress.active {
-            display: block;
-        }
-
-        .file-progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .file-progress-phase {
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .file-progress-phase.downloading {
-            color: var(--amber);
-        }
-
-        .file-progress-phase.uploading {
-            color: var(--accent);
-        }
-
-        .file-progress-size {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            font-variant-numeric: tabular-nums;
-        }
-
-        .file-progress-name {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            margin-bottom: 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
-        }
-
-        .file-bar-outer {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 100px;
-            overflow: hidden;
-        }
-
-        .file-bar-inner {
-            height: 100%;
-            border-radius: 100px;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .file-bar-inner.downloading {
-            background: linear-gradient(90deg, var(--amber), #f59e0b);
-        }
-
-        .file-bar-inner.uploading {
-            background: linear-gradient(90deg, var(--accent), #a78bfa);
-        }
-
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            margin-bottom: 8px;
-        }
-
-        .last-error {
-            margin-top: 10px;
-            padding: 8px 10px;
-            border-radius: 10px;
-            background: rgba(255, 107, 107, 0.08);
-            border: 1px solid rgba(255, 107, 107, 0.35);
-            color: #ffd6d6;
-            font-size: 0.75rem;
-            line-height: 1.4;
-        }
-
-        .last-error.muted {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.08);
-            color: var(--text-dim);
-        }
-
-        /* tracker info */
-        .tracker-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-        }
-
-        /* log feed */
-        .log-feed {
-            max-height: 180px;
-            overflow-y: auto;
-            font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            line-height: 1.8;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) transparent;
-        }
-
-        .log-feed .entry {
-            padding: 2px 0;
-            border-bottom: 1px solid rgba(42, 42, 58, 0.5);
-        }
-
-        .log-feed .msg-id {
-            color: var(--accent);
-        }
-
-        .log-feed .success {
-            color: var(--green);
-        }
-
-        .log-feed .fail {
-            color: var(--red);
-        }
-
-        /* footer */
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 0.8rem;
-        }
-
-        .footer a {
-            color: var(--text-dim);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .footer a:hover {
-            color: var(--text);
-        }
-
-        /* responsive */
-        @media (max-width: 500px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .container {
-                padding: 20px 14px;
-            }
-        }
+        select:focus, select:hover { border-color: var(--accent); }
+        .search-input { width: 100%; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.85rem; outline: none; margin-bottom: 8px; transition: border-color 0.2s; }
+        .search-input:focus { border-color: var(--accent); }
+        .channel-list { max-height: 240px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+        .ch-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; border-bottom: 1px solid rgba(42,42,58,0.5); transition: background 0.15s; user-select: none; }
+        .ch-item:last-child { border-bottom: none; }
+        .ch-item:hover { background: rgba(124,92,252,0.08); }
+        .ch-item.selected { background: rgba(124,92,252,0.13); }
+        .ch-item input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; }
+        .ch-name { font-size: 0.85rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ch-count { font-size: 0.72rem; color: var(--text-dim); flex-shrink: 0; }
+        .sel-info { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
+        .sel-info b { color: var(--accent); }
+        .btn-row { display: flex; gap: 10px; margin-top: 4px; }
+        .btn { flex: 1; padding: 12px 20px; border: none; border-radius: 8px; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; outline: none; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 0 20px var(--accent-glow); }
+        .btn-primary:hover:not(:disabled) { background: #6b4ce0; transform: translateY(-1px); }
+        .btn-danger { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+        .btn-danger:hover:not(:disabled) { background: rgba(248,113,113,0.25); }
+        .live-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .live-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(124,92,252,0.3); background: rgba(124,92,252,0.15); color: var(--accent); }
+        .live-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 1.2s infinite; }
+        .live-badge.off { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: var(--text-dim); }
+        .live-badge.off .dot { background: var(--text-dim); animation: none; }
+        @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
+        .stats-row { display: flex; gap: 12px; margin-bottom: 16px; }
+        .stat-box { flex: 1; text-align: center; padding: 14px 8px; background: var(--surface-2); border-radius: 8px; border: 1px solid var(--border); }
+        .stat-value { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .stat-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+        .stat-value.green { color: var(--green); }
+        .stat-value.red { color: var(--red); }
+        .status-line { padding: 10px 14px; background: var(--surface-2); border-radius: 8px; border: 1px solid var(--border); font-size: 0.8rem; color: var(--text-dim); }
+        .status-line b { color: var(--text); }
+        .catchup-bar-wrap { margin-top: 10px; display: none; }
+        .catchup-bar-wrap.active { display: block; }
+        .catchup-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; }
+        .bar-outer { width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; }
+        .bar-inner { height: 100%; background: linear-gradient(90deg, var(--accent), #a78bfa); border-radius: 100px; width: 0%; transition: width 0.3s ease; }
+        .log-feed { max-height: 200px; overflow-y: auto; font-family: 'SF Mono','Cascadia Code',monospace; font-size: 0.75rem; color: var(--text-dim); line-height: 1.8; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+        .log-feed .entry { padding: 2px 0; border-bottom: 1px solid rgba(42,42,58,0.4); }
+        .log-feed .ok { color: var(--green); }
+        .log-feed .err { color: var(--red); }
+        .log-feed .info { color: var(--amber); }
+        .tracker-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); padding-top: 12px; border-top: 1px solid var(--border); }
+        @media(max-width:500px){ .stats-row{flex-wrap:wrap} .container{padding:20px 14px} }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>telegram-clone</h1>
-            <div class="status-badge">
-                <div class="status-dot" id="statusDot"></div>
-                <span id="statusText">connecting...</span>
-            </div>
+<div class="container">
+
+    <div class="header">
+        <h1>telegram-clone</h1>
+        <div class="status-badge">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">connecting...</span>
         </div>
-
-        <!-- channel selector -->
-        <div class="card" id="configCard">
-            <div class="card-title">channels</div>
-            <div class="select-group">
-                <label for="sourceSelect">source — clone from</label>
-                <select id="sourceSelect">
-                    <option value="">loading channels...</option>
-                </select>
-            </div>
-            <div class="select-group">
-                <label for="destSelect">destination — clone to</label>
-                <select id="destSelect">
-                    <option value="">loading channels...</option>
-                </select>
-            </div>
-            <div class="select-group">
-                <label for="sinceHoursInput">only clone messages from the last (hours)</label>
-                <input type="number" id="sinceHoursInput" min="0" step="1" placeholder="leave empty for full history">
-                <div class="hint">e.g. 24 = only messages from the last 24 hours. leave blank to clone everything.</div>
-            </div>
-            <div class="btn-row">
-                <button class="btn btn-primary" id="startBtn" disabled onclick="startClone()">start clone</button>
-                <button class="btn btn-danger" id="stopBtn" disabled onclick="stopClone()">stop</button>
-            </div>
-        </div>
-
-        <!-- progress -->
-        <div class="card">
-            <div class="card-title">progress</div>
-
-            <div class="job-status idle" id="jobStatus">
-                <div class="pulse"></div>
-                <span id="jobStatusText">idle</span>
-            </div>
-
-            <div class="progress-info">
-                <span id="progressText">0 / 0 messages</span>
-                <span id="progressPct">0%</span>
-            </div>
-
-            <div class="progress-wrap">
-                <div class="progress-bar-outer">
-                    <div class="progress-bar-inner" id="progressBar"></div>
-                </div>
-            </div>
-
-            <div class="last-error muted" id="lastError">no errors</div>
-
-            <div class="file-progress" id="fileProgress">
-                <div class="file-progress-header">
-                    <span class="file-progress-phase" id="filePhase">downloading</span>
-                    <span class="file-progress-size">
-                        <span id="fileSpeed" style="margin-right: 8px; color: var(--accent);">0 B/s</span>
-                        <span id="fileSize">0 B / 0 B</span>
-                    </span>
-                </div>
-                <div class="file-progress-name" id="fileName">—</div>
-                <div class="file-bar-outer">
-                    <div class="file-bar-inner" id="fileBar"></div>
-                </div>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <div class="stat-value green" id="statCloned">0</div>
-                    <div class="stat-label">cloned</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value amber" id="statSkipped">0</div>
-                    <div class="stat-label">skipped</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value amber" id="statSkippedLimit">0</div>
-                    <div class="stat-label">over limit</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value red" id="statFailed">0</div>
-                    <div class="stat-label">failed</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="statTotal">0</div>
-                    <div class="stat-label">total</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- log -->
-        <div class="card">
-            <div class="card-title">log</div>
-            <div class="log-feed" id="logFeed">
-                <div class="entry" style="color: var(--text-dim)">waiting for clone job...</div>
-            </div>
-        </div>
-
-        <!-- tracker -->
-        <div class="card">
-            <div class="card-title">tracker</div>
-            <div class="tracker-info">
-                <span>total cloned: <strong id="trackerTotal">—</strong></span>
-                <span>last run: <strong id="trackerLastRun">—</strong></span>
-            </div>
-        </div>
-
-
     </div>
 
-    <script>
-        const $ = id => document.getElementById(id);
-        let evtSource = null;
-        let logCount = 0;
-        let jobRunning = false;
-        let sseRetries = 0;
-        let sseReconnectTimer = null;
-        let pollTimer = null;
-        let lastErrorAt = null;
-        let lastSkipAt = null;
-        let lastJobState = null;
+    <!-- config -->
+    <div class="card">
+        <div class="card-title">setup</div>
 
-        // -- init --
-        async function init() {
-            try {
-                const res = await fetch('/api/status');
-                const data = await res.json();
+        <div class="field-group">
+            <label class="field-label">source channels — select up to 30 to watch</label>
+            <input class="search-input" type="text" placeholder="search channels..." oninput="filterList(this.value)">
+            <div class="channel-list" id="channelList">
+                <div class="ch-item" style="justify-content:center;color:var(--text-dim)">loading...</div>
+            </div>
+            <div class="sel-info">selected: <b id="selCount">0</b> / 30</div>
+        </div>
 
-                if (data.logged_in) {
-                    $('statusDot').classList.add('online');
-                    $('statusText').textContent = `@${data.user.username || data.user.name}`;
-                } else {
-                    $('statusText').textContent = 'not connected';
-                }
+        <div class="field-group">
+            <label class="field-label">destination — forward all messages here</label>
+            <select id="destSelect"><option value="">loading channels...</option></select>
+        </div>
 
-                if (data.tracker) {
-                    $('trackerTotal').textContent = data.tracker.total_cloned;
-                    $('trackerLastRun').textContent = data.tracker.last_run
-                        ? new Date(data.tracker.last_run).toLocaleString()
-                        : 'never';
-                }
+        <div class="btn-row">
+            <button class="btn btn-primary" id="startBtn" disabled onclick="startForward()">start live forward</button>
+            <button class="btn btn-danger"  id="stopBtn"  disabled onclick="stopForward()">stop</button>
+        </div>
+    </div>
 
-                if (data.job && data.job.running) {
-                    jobRunning = true;
-                    $('startBtn').disabled = true;
-                    $('stopBtn').disabled = false;
-                    setJobState('running');
-                    if (data.job.last_stats) {
-                        updateStats(data.job.last_stats);
-                    }
-                    connectSSE();
-                } else {
-                    $('stopBtn').disabled = true;
-                }
-            } catch (e) {
-                $('statusText').textContent = 'error';
-            }
+    <!-- live status -->
+    <div class="card">
+        <div class="live-header">
+            <span class="card-title" style="margin:0">live forwarding</span>
+            <span class="live-badge off" id="liveBadge"><span class="dot"></span><span id="liveLabel">offline</span></span>
+        </div>
 
-            loadChannels();
-            startPolling();
+        <div class="stats-row">
+            <div class="stat-box"><div class="stat-value green" id="statFwd">0</div><div class="stat-label">forwarded</div></div>
+            <div class="stat-box"><div class="stat-value red"   id="statFail">0</div><div class="stat-label">failed</div></div>
+            <div class="stat-box"><div class="stat-value"       id="statSrc">0</div><div class="stat-label">sources</div></div>
+        </div>
+
+        <div class="status-line" id="statusLine">idle — select channels and click start</div>
+
+        <div class="catchup-bar-wrap" id="catchupWrap">
+            <div class="catchup-label" id="catchupLabel">catching up missed messages...</div>
+            <div class="bar-outer"><div class="bar-inner" id="catchupBar"></div></div>
+        </div>
+    </div>
+
+    <!-- log -->
+    <div class="card">
+        <div class="card-title">log</div>
+        <div class="log-feed" id="logFeed">
+            <div class="entry">waiting for live forwarding to start...</div>
+        </div>
+    </div>
+
+    <!-- tracker -->
+    <div class="card">
+        <div class="card-title">tracker</div>
+        <div class="tracker-row">
+            <span>total cloned: <strong id="trackerTotal">—</strong></span>
+            <span>last run: <strong id="trackerLastRun">—</strong></span>
+        </div>
+    </div>
+
+</div>
+<script>
+const $ = id => document.getElementById(id);
+let allChannels = [];
+let selected = new Set();
+let evtSrc = null;
+let forwarding = false;
+let logCount = 0;
+
+// ── boot ──────────────────────────────────────────────
+async function init() {
+    try {
+        const d = await apiFetch('/api/status');
+        if (d.logged_in) {
+            $('statusDot').classList.add('online');
+            $('statusText').textContent = `@${d.user.username || d.user.name}`;
+        } else {
+            $('statusText').textContent = 'not connected';
         }
+        if (d.tracker) updateTracker(d.tracker);
+    } catch(e) { $('statusText').textContent = 'error'; }
 
-        async function loadChannels() {
-            try {
-                const res = await fetch('/api/channels');
-                const data = await res.json();
-
-                if (data.channels) {
-                    const opts = data.channels.map(c =>
-                        `<option value="${c.id}">${c.title}${c.members ? ` (${c.members})` : ''}${c.username ? ` @${c.username}` : ''}</option>`
-                    ).join('');
-
-                    const placeholder = '<option value="">— select channel —</option>';
-                    $('sourceSelect').innerHTML = placeholder + opts;
-                    $('destSelect').innerHTML = placeholder + opts;
-
-                    if (!jobRunning) {
-                        $('startBtn').disabled = false;
-                    }
-                }
-            } catch (e) {
-                $('sourceSelect').innerHTML = '<option value="">failed to load</option>';
-                $('destSelect').innerHTML = '<option value="">failed to load</option>';
-            }
+    try {
+        const d = await apiFetch('/api/forward/status');
+        if (d.running) {
+            forwarding = true;
+            setLive(true);
+            updateStats(d.stats);
+            connectSSE();
         }
+    } catch(e) {}
 
-        // -- periodic status poll (fallback when SSE drops) --
-        function startPolling() {
-            if (pollTimer) clearInterval(pollTimer);
-            pollTimer = setInterval(pollStatus, 8000);
+    loadChannels();
+    setInterval(pollStatus, 10000);
+}
+
+async function loadChannels() {
+    try {
+        const d = await apiFetch('/api/channels');
+        if (!d.channels) return;
+        allChannels = d.channels;
+        renderList(allChannels);
+        buildDest(allChannels);
+        if (!forwarding) $('startBtn').disabled = false;
+    } catch(e) {
+        $('channelList').innerHTML = '<div class="ch-item" style="color:var(--red)">failed to load</div>';
+    }
+}
+
+// ── channel checklist ──────────────────────────────────
+function renderList(channels) {
+    if (!channels.length) {
+        $('channelList').innerHTML = '<div class="ch-item" style="color:var(--text-dim);justify-content:center">no channels</div>';
+        return;
+    }
+    $('channelList').innerHTML = channels.map(c => {
+        const id = String(c.id);
+        const chk = selected.has(id);
+        return `<div class="ch-item${chk?' selected':''}" onclick="toggle('${id}',this)">
+            <input type="checkbox"${chk?' checked':''} onclick="event.stopPropagation();toggle('${id}',this.parentElement)">
+            <span class="ch-name">${esc(c.title)}</span>
+            ${c.members?`<span class="ch-count">${c.members.toLocaleString()}</span>`:''}
+        </div>`;
+    }).join('');
+}
+
+function filterList(q) {
+    renderList(allChannels.filter(c => c.title.toLowerCase().includes(q.toLowerCase())));
+}
+
+function toggle(id, el) {
+    if (selected.has(id)) {
+        selected.delete(id);
+        el.classList.remove('selected');
+        el.querySelector('input').checked = false;
+    } else {
+        if (selected.size >= 30) { alert('max 30 sources'); return; }
+        selected.add(id);
+        el.classList.add('selected');
+        el.querySelector('input').checked = true;
+    }
+    $('selCount').textContent = selected.size;
+}
+
+function buildDest(channels) {
+    $('destSelect').innerHTML = '<option value="">— select destination —</option>' +
+        channels.map(c => `<option value="${c.id}">${esc(c.title)}${c.members?` (${c.members.toLocaleString()})`:''}</option>`).join('');
+}
+
+// ── controls ──────────────────────────────────────────
+async function startForward() {
+    const sources = [...selected];
+    const dest = $('destSelect').value;
+    if (!sources.length) return alert('select at least one source channel');
+    if (!dest) return alert('select a destination channel');
+    if (sources.includes(dest)) return alert("destination can't also be a source");
+
+    $('startBtn').disabled = true;
+    $('stopBtn').disabled = false;
+    $('logFeed').innerHTML = '';
+    logCount = 0;
+
+    try {
+        const d = await apiFetch('/api/forward/start', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ sources, dest }),
+        });
+        if (d.error) throw new Error(d.error);
+        forwarding = true;
+        setLive(true);
+        log(`watching ${sources.length} channel(s) — forwarding new messages automatically`, 'ok');
+        connectSSE();
+    } catch(e) {
+        alert('failed to start: ' + e.message);
+        $('startBtn').disabled = false;
+        $('stopBtn').disabled = true;
+    }
+}
+
+async function stopForward() {
+    $('stopBtn').disabled = true;
+    try {
+        await apiFetch('/api/forward/stop', { method: 'POST' });
+        forwarding = false;
+        setLive(false);
+        log('live forwarding stopped', 'err');
+        if (evtSrc) { evtSrc.close(); evtSrc = null; }
+        $('startBtn').disabled = false;
+        $('statusLine').textContent = 'stopped';
+        $('catchupWrap').classList.remove('active');
+    } catch(e) {
+        log('stop failed: ' + e.message, 'err');
+        $('stopBtn').disabled = false;
+    }
+}
+
+// ── SSE ───────────────────────────────────────────────
+function connectSSE() {
+    if (evtSrc) evtSrc.close();
+    evtSrc = new EventSource('/api/forward/progress');
+    evtSrc.onmessage = e => {
+        const d = JSON.parse(e.data);
+        if (d.heartbeat) return;
+        updateStats(d);
+        if (d.catchup_channel) {
+            $('catchupWrap').classList.add('active');
+            const pct = d.catchup_total ? Math.round((d.catchup_done / d.catchup_total) * 100) : 0;
+            $('catchupBar').style.width = pct + '%';
+            $('catchupLabel').textContent = `catching up: ${d.catchup_channel} — ${d.catchup_done} messages`;
+        } else {
+            $('catchupWrap').classList.remove('active');
         }
-
-        async function pollStatus() {
-            try {
-                const res = await fetch('/api/status');
-                const data = await res.json();
-
-                if (data.tracker) {
-                    $('trackerTotal').textContent = data.tracker.total_cloned;
-                    $('trackerLastRun').textContent = data.tracker.last_run
-                        ? new Date(data.tracker.last_run).toLocaleString()
-                        : 'never';
-                }
-
-                if (data.job && data.job.running) {
-                    if (!jobRunning) {
-                        jobRunning = true;
-                        $('startBtn').disabled = true;
-                        $('stopBtn').disabled = false;
-                        setJobState('running');
-                        connectSSE();
-                    }
-                    if (data.job.last_stats && !evtSource) {
-                        updateStats(data.job.last_stats);
-                    }
-                } else if (jobRunning) {
-                    jobRunning = false;
-                    const finalStats = data.job && data.job.stats;
-                    if (finalStats && finalStats.status === 'error') {
-                        setJobState('error');
-                    } else {
-                        setJobState('done');
-                    }
-                    if (finalStats) updateStats(finalStats);
-                    cleanup();
-                    refreshTracker();
-                }
-            } catch (e) { }
+        if (d.last_message_at && !d.catchup_channel) {
+            log(`message forwarded → total: ${d.forwarded}`, 'ok');
         }
-
-        // -- clone controls --
-        async function startClone() {
-            const source = $('sourceSelect').value;
-            const dest = $('destSelect').value;
-            const sinceHoursRaw = $('sinceHoursInput').value;
-            const since_hours = sinceHoursRaw ? Number(sinceHoursRaw) : null;
-
-            if (!source || !dest) return alert('pick both channels');
-            if (source === dest) return alert('source and dest must be different');
-
-            $('startBtn').disabled = true;
-            $('stopBtn').disabled = false;
-            $('logFeed').innerHTML = '';
-            logCount = 0;
-
-            try {
-                const res = await fetch('/api/clone/start', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ source, dest, since_hours }),
-                });
-
-                const data = await res.json();
-                if (!res.ok) {
-                    alert(data.error);
-                    $('startBtn').disabled = false;
-                    $('stopBtn').disabled = true;
-                    return;
-                }
-
-                jobRunning = true;
-                setJobState('running');
-                connectSSE();
-            } catch (e) {
-                alert('failed to start: ' + e.message);
-                $('startBtn').disabled = false;
-            }
+        if (d.last_error_at) {
+            log(`error: ${d.last_error}`, 'err');
         }
+    };
+    evtSrc.onerror = () => {
+        if (!forwarding) return;
+        evtSrc.close(); evtSrc = null;
+        setTimeout(() => { if (forwarding) connectSSE(); }, 5000);
+    };
+}
 
-        async function stopClone() {
-            $('stopBtn').disabled = true;
-            try {
-                await fetch('/api/clone/stop', { method: 'POST' });
-                addLog('stop signal sent', 'fail');
-            } catch (e) {
-                addLog('stop request failed', 'fail');
-            }
-        }
+// ── ui helpers ────────────────────────────────────────
+function setLive(on) {
+    $('liveBadge').className = 'live-badge' + (on ? '' : ' off');
+    $('liveLabel').textContent = on ? 'live' : 'offline';
+    $('startBtn').disabled = on;
+    $('stopBtn').disabled = !on;
+}
 
-        // -- SSE with auto-reconnect --
-        function connectSSE() {
-            if (sseReconnectTimer) {
-                clearTimeout(sseReconnectTimer);
-                sseReconnectTimer = null;
-            }
-            if (evtSource) evtSource.close();
+function updateStats(s) {
+    $('statFwd').textContent  = s.forwarded || 0;
+    $('statFail').textContent = s.failed || 0;
+    $('statSrc').textContent  = (s.sources || []).length;
 
-            evtSource = new EventSource('/api/clone/progress');
-            sseRetries = 0;
+    if (s.last_message_at) {
+        const t = new Date(s.last_message_at).toLocaleTimeString();
+        $('statusLine').innerHTML = `last forwarded at <b>${t}</b>`;
+        if (s.last_error) $('statusLine').innerHTML += ` &nbsp;·&nbsp; <span style="color:var(--red)">${esc(s.last_error)}</span>`;
+    } else if (s.started_at) {
+        const t = new Date(s.started_at).toLocaleTimeString();
+        $('statusLine').innerHTML = `started at <b>${t}</b> — watching for new messages...`;
+    }
+}
 
-            evtSource.onmessage = (e) => {
-                sseRetries = 0;
-                const data = JSON.parse(e.data);
-                if (data.heartbeat) return;
+function log(text, cls) {
+    const el = document.createElement('div');
+    el.className = `entry ${cls||''}`;
+    el.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+    const feed = $('logFeed');
+    feed.firstChild ? feed.insertBefore(el, feed.firstChild) : feed.appendChild(el);
+    if (++logCount > 200 && feed.lastChild) feed.removeChild(feed.lastChild);
+}
 
-                if (data.error) {
-                    setJobState('error');
-                    addLog(`error: ${data.error}`, 'fail');
-                    jobRunning = false;
-                    cleanup();
-                    return;
-                }
+function updateTracker(t) {
+    $('trackerTotal').textContent  = t.total_cloned;
+    $('trackerLastRun').textContent = t.last_run ? new Date(t.last_run).toLocaleString() : 'never';
+}
 
-                updateStats(data);
+async function pollStatus() {
+    try {
+        const d = await apiFetch('/api/status');
+        if (d.tracker) updateTracker(d.tracker);
+    } catch(e) {}
+}
 
-                if (data.current_msg) {
-                    addLog(`msg #${data.current_msg} → cloned`, 'success');
-                }
+async function apiFetch(url, opts) {
+    const res = await fetch(url, opts);
+    return res.json();
+}
 
-                if (data.last_error_at && data.last_error_at !== lastErrorAt) {
-                    lastErrorAt = data.last_error_at;
-                    const wait = data.last_error_wait ? ` (next retry in ${Math.round(data.last_error_wait)}s)` : '';
-                    addLog(`retry msg #${data.last_error_msg_id} attempt ${data.last_error_attempt}: ${data.last_error}${wait}`, 'fail');
-                }
+function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-                if (data.last_skip_at && data.last_skip_at !== lastSkipAt) {
-                    lastSkipAt = data.last_skip_at;
-                    const size = data.last_skip_size_human || '—';
-                    const limit = data.last_skip_limit_human || '—';
-                    const name = data.last_skip_filename ? ` (${data.last_skip_filename})` : '';
-                    addLog(`skipped msg #${data.last_skip_msg_id}${name} — ${size} > ${limit}`, 'fail');
-                }
-
-                if (data.status === 'retrying') {
-                    setJobState('running');
-                }
-
-                if (data.status === 'watching') {
-                    setJobState('watching');
-                    if (lastJobState !== 'watching') {
-                        addLog('watching for new messages...', 'success');
-                    }
-                }
-
-                if (data.status === 'completed' || data.status === 'stopped') {
-                    setJobState(data.status === 'completed' ? 'done' : 'idle');
-                    addLog(data.status === 'completed' ? 'clone complete' : 'clone stopped', 'success');
-                    jobRunning = false;
-                    cleanup();
-                    refreshTracker();
-                }
-            };
-
-            evtSource.onerror = () => {
-                if (!jobRunning) return;
-
-                evtSource.close();
-                evtSource = null;
-                sseRetries++;
-                const delay = Math.min(1000 * Math.pow(2, sseRetries - 1), 15000);
-                addLog(`sse dropped, reconnecting in ${(delay / 1000).toFixed(0)}s...`, 'fail');
-                sseReconnectTimer = setTimeout(() => {
-                    if (jobRunning) connectSSE();
-                }, delay);
-            };
-        }
-
-        function cleanup() {
-            if (sseReconnectTimer) {
-                clearTimeout(sseReconnectTimer);
-                sseReconnectTimer = null;
-            }
-            if (evtSource) { evtSource.close(); evtSource = null; }
-            $('startBtn').disabled = false;
-            $('stopBtn').disabled = true;
-        }
-
-        // -- ui updates --
-        function updateStats(s) {
-            $('statCloned').textContent = s.cloned || 0;
-            $('statSkipped').textContent = s.skipped || 0;
-            $('statSkippedLimit').textContent = s.skipped_over_limit || 0;
-            $('statFailed').textContent = s.failed || 0;
-            $('statTotal').textContent = s.total || 0;
-
-            const processed = s.processed || 0;
-            const total = s.total || 0;
-            const pct = total ? Math.round((processed / total) * 100) : 0;
-            $('progressBar').style.width = pct + '%';
-            $('progressText').textContent = `${processed} / ${total} messages`;
-            $('progressPct').textContent = pct + '%';
-
-            const fp = s.file_progress;
-            const fpEl = $('fileProgress');
-            if (fp && fp.total > 0) {
-                fpEl.classList.add('active');
-                $('filePhase').textContent = fp.phase === 'uploading' ? '↑ uploading' : '↓ downloading';
-                $('filePhase').className = 'file-progress-phase ' + fp.phase;
-                $('fileName').textContent = fp.filename || '—';
-                $('fileSize').textContent = `${fp.current_human} / ${fp.total_human}`;
-                $('fileSpeed').textContent = fp.speed_human || '—';
-                const filePct = Math.round((fp.current / fp.total) * 100);
-                $('fileBar').style.width = filePct + '%';
-                $('fileBar').className = 'file-bar-inner ' + fp.phase;
-            } else {
-                fpEl.classList.remove('active');
-            }
-
-            if (s.last_error) {
-                const wait = s.last_error_wait ? ` | next retry in ${Math.round(s.last_error_wait)}s` : '';
-                $('lastError').textContent = `msg #${s.last_error_msg_id} attempt ${s.last_error_attempt} — ${s.last_error}${wait}`;
-                $('lastError').classList.remove('muted');
-            } else {
-                $('lastError').textContent = 'no errors';
-                $('lastError').classList.add('muted');
-            }
-        }
-
-        function setJobState(state) {
-            const el = $('jobStatus');
-            el.className = 'job-status ' + (state === 'running' || state === 'watching' ? '' : state === 'done' ? 'done' : state === 'error' ? 'error' : 'idle');
-            const labels = { running: 'cloning...', watching: 'live sync', done: 'complete', idle: 'idle', error: 'error', stopped: 'stopped' };
-            $('jobStatusText').textContent = labels[state] || state;
-            lastJobState = state;
-        }
-
-        function addLog(text, cls) {
-            const entry = document.createElement('div');
-            entry.className = `entry ${cls || ''}`;
-            entry.textContent = text;
-            const feed = $('logFeed');
-            if (feed.firstChild) {
-                feed.insertBefore(entry, feed.firstChild);
-            } else {
-                feed.appendChild(entry);
-            }
-            logCount++;
-            if (logCount > 200 && feed.lastChild) feed.removeChild(feed.lastChild);
-        }
-
-        async function refreshTracker() {
-            try {
-                const res = await fetch('/api/status');
-                const data = await res.json();
-                if (data.tracker) {
-                    $('trackerTotal').textContent = data.tracker.total_cloned;
-                    $('trackerLastRun').textContent = data.tracker.last_run
-                        ? new Date(data.tracker.last_run).toLocaleString()
-                        : 'never';
-                }
-            } catch (e) { }
-        }
-
-        init();
-    </script>
+init();
+</script>
 </body>
-
 </html>
