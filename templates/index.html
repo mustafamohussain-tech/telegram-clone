@@ -23,19 +23,21 @@
         .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
         .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
         .card-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 16px; }
-        .field-label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-dim); margin-bottom: 6px; }
         .field-group { margin-bottom: 16px; }
-        select {
-            width: 100%; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--border);
-            border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.9rem; cursor: pointer;
-            outline: none; appearance: none; -webkit-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888a0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 12px center; transition: border-color 0.2s;
-        }
+        .field-label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-dim); margin-bottom: 6px; }
+        /* destination dropdown */
+        select { width: 100%; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.9rem; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888a0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; transition: border-color 0.2s; }
         select:focus, select:hover { border-color: var(--accent); }
-        .search-input { width: 100%; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.85rem; outline: none; margin-bottom: 8px; transition: border-color 0.2s; }
-        .search-input:focus { border-color: var(--accent); }
-        .channel-list { max-height: 240px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+        /* collapsible source picker */
+        .picker-wrap { position: relative; }
+        .picker-trigger { width: 100%; padding: 10px 36px 10px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.9rem; cursor: pointer; outline: none; text-align: left; transition: border-color 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .picker-trigger:hover, .picker-trigger:focus { border-color: var(--accent); }
+        .picker-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-dim); font-size: 0.65rem; transition: transform 0.2s; }
+        .picker-arrow.up { transform: translateY(-50%) rotate(180deg); }
+        .picker-dropdown { display: none; margin-top: 6px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); overflow: hidden; }
+        .picker-dropdown.open { display: block; }
+        .picker-search { width: 100%; padding: 9px 12px; background: var(--surface); border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 0.85rem; outline: none; }
+        .channel-list { max-height: 220px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
         .ch-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; border-bottom: 1px solid rgba(42,42,58,0.5); transition: background 0.15s; user-select: none; }
         .ch-item:last-child { border-bottom: none; }
         .ch-item:hover { background: rgba(124,92,252,0.08); }
@@ -45,6 +47,7 @@
         .ch-count { font-size: 0.72rem; color: var(--text-dim); flex-shrink: 0; }
         .sel-info { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
         .sel-info b { color: var(--accent); }
+        /* buttons */
         .btn-row { display: flex; gap: 10px; margin-top: 4px; }
         .btn { flex: 1; padding: 12px 20px; border: none; border-radius: 8px; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; outline: none; }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -52,6 +55,7 @@
         .btn-primary:hover:not(:disabled) { background: #6b4ce0; transform: translateY(-1px); }
         .btn-danger { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
         .btn-danger:hover:not(:disabled) { background: rgba(248,113,113,0.25); }
+        /* live status */
         .live-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
         .live-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(124,92,252,0.3); background: rgba(124,92,252,0.15); color: var(--accent); }
         .live-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 1.2s infinite; }
@@ -66,16 +70,17 @@
         .stat-value.red { color: var(--red); }
         .status-line { padding: 10px 14px; background: var(--surface-2); border-radius: 8px; border: 1px solid var(--border); font-size: 0.8rem; color: var(--text-dim); }
         .status-line b { color: var(--text); }
-        .catchup-bar-wrap { margin-top: 10px; display: none; }
-        .catchup-bar-wrap.active { display: block; }
+        .catchup-wrap { margin-top: 10px; display: none; }
+        .catchup-wrap.active { display: block; }
         .catchup-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; }
         .bar-outer { width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; }
-        .bar-inner { height: 100%; background: linear-gradient(90deg, var(--accent), #a78bfa); border-radius: 100px; width: 0%; transition: width 0.3s ease; }
+        .bar-inner { height: 100%; background: linear-gradient(90deg, var(--accent), #a78bfa); border-radius: 100px; width: 0%; transition: width 0.3s; }
+        /* log */
         .log-feed { max-height: 200px; overflow-y: auto; font-family: 'SF Mono','Cascadia Code',monospace; font-size: 0.75rem; color: var(--text-dim); line-height: 1.8; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
         .log-feed .entry { padding: 2px 0; border-bottom: 1px solid rgba(42,42,58,0.4); }
-        .log-feed .ok { color: var(--green); }
+        .log-feed .ok  { color: var(--green); }
         .log-feed .err { color: var(--red); }
-        .log-feed .info { color: var(--amber); }
+        /* tracker */
         .tracker-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); padding-top: 12px; border-top: 1px solid var(--border); }
         @media(max-width:500px){ .stats-row{flex-wrap:wrap} .container{padding:20px 14px} }
     </style>
@@ -91,15 +96,21 @@
         </div>
     </div>
 
-    <!-- config -->
+    <!-- setup card -->
     <div class="card">
         <div class="card-title">setup</div>
 
         <div class="field-group">
             <label class="field-label">source channels — select up to 30 to watch</label>
-            <input class="search-input" type="text" placeholder="search channels..." oninput="filterList(this.value)">
-            <div class="channel-list" id="channelList">
-                <div class="ch-item" style="justify-content:center;color:var(--text-dim)">loading...</div>
+            <div class="picker-wrap" id="pickerWrap">
+                <button class="picker-trigger" id="pickerTrigger" onclick="togglePicker()">click to select channels...</button>
+                <span class="picker-arrow" id="pickerArrow">▼</span>
+                <div class="picker-dropdown" id="pickerDropdown">
+                    <input class="picker-search" type="text" placeholder="search..." oninput="filterList(this.value)">
+                    <div class="channel-list" id="channelList">
+                        <div class="ch-item" style="justify-content:center;color:var(--text-dim)">loading...</div>
+                    </div>
+                </div>
             </div>
             <div class="sel-info">selected: <b id="selCount">0</b> / 30</div>
         </div>
@@ -115,28 +126,25 @@
         </div>
     </div>
 
-    <!-- live status -->
+    <!-- live status card -->
     <div class="card">
         <div class="live-header">
             <span class="card-title" style="margin:0">live forwarding</span>
             <span class="live-badge off" id="liveBadge"><span class="dot"></span><span id="liveLabel">offline</span></span>
         </div>
-
         <div class="stats-row">
             <div class="stat-box"><div class="stat-value green" id="statFwd">0</div><div class="stat-label">forwarded</div></div>
             <div class="stat-box"><div class="stat-value red"   id="statFail">0</div><div class="stat-label">failed</div></div>
             <div class="stat-box"><div class="stat-value"       id="statSrc">0</div><div class="stat-label">sources</div></div>
         </div>
-
         <div class="status-line" id="statusLine">idle — select channels and click start</div>
-
-        <div class="catchup-bar-wrap" id="catchupWrap">
+        <div class="catchup-wrap" id="catchupWrap">
             <div class="catchup-label" id="catchupLabel">catching up missed messages...</div>
             <div class="bar-outer"><div class="bar-inner" id="catchupBar"></div></div>
         </div>
     </div>
 
-    <!-- log -->
+    <!-- log card -->
     <div class="card">
         <div class="card-title">log</div>
         <div class="log-feed" id="logFeed">
@@ -144,7 +152,7 @@
         </div>
     </div>
 
-    <!-- tracker -->
+    <!-- tracker card -->
     <div class="card">
         <div class="card-title">tracker</div>
         <div class="tracker-row">
@@ -161,11 +169,12 @@ let selected = new Set();
 let evtSrc = null;
 let forwarding = false;
 let logCount = 0;
+let pickerOpen = false;
 
-// ── boot ──────────────────────────────────────────────
+// ── boot ─────────────────────────────────────────────────────
 async function init() {
     try {
-        const d = await apiFetch('/api/status');
+        const d = await api('/api/status');
         if (d.logged_in) {
             $('statusDot').classList.add('online');
             $('statusText').textContent = `@${d.user.username || d.user.name}`;
@@ -176,7 +185,7 @@ async function init() {
     } catch(e) { $('statusText').textContent = 'error'; }
 
     try {
-        const d = await apiFetch('/api/forward/status');
+        const d = await api('/api/forward/status');
         if (d.running) {
             forwarding = true;
             setLive(true);
@@ -187,11 +196,18 @@ async function init() {
 
     loadChannels();
     setInterval(pollStatus, 10000);
+
+    // close picker when clicking outside
+    document.addEventListener('click', e => {
+        if (pickerOpen && !$('pickerWrap').contains(e.target)) {
+            closePicker();
+        }
+    });
 }
 
 async function loadChannels() {
     try {
-        const d = await apiFetch('/api/channels');
+        const d = await api('/api/channels');
         if (!d.channels) return;
         allChannels = d.channels;
         renderList(allChannels);
@@ -202,10 +218,33 @@ async function loadChannels() {
     }
 }
 
-// ── channel checklist ──────────────────────────────────
+// ── picker ───────────────────────────────────────────────────
+function togglePicker() {
+    pickerOpen ? closePicker() : openPicker();
+}
+
+function openPicker() {
+    $('pickerDropdown').classList.add('open');
+    $('pickerArrow').classList.add('up');
+    pickerOpen = true;
+}
+
+function closePicker() {
+    $('pickerDropdown').classList.remove('open');
+    $('pickerArrow').classList.remove('up');
+    pickerOpen = false;
+    updateTriggerLabel();
+}
+
+function updateTriggerLabel() {
+    $('pickerTrigger').textContent = selected.size
+        ? `${selected.size} channel(s) selected — click to change`
+        : 'click to select channels...';
+}
+
 function renderList(channels) {
     if (!channels.length) {
-        $('channelList').innerHTML = '<div class="ch-item" style="color:var(--text-dim);justify-content:center">no channels</div>';
+        $('channelList').innerHTML = '<div class="ch-item" style="color:var(--text-dim);justify-content:center">no results</div>';
         return;
     }
     $('channelList').innerHTML = channels.map(c => {
@@ -242,7 +281,7 @@ function buildDest(channels) {
         channels.map(c => `<option value="${c.id}">${esc(c.title)}${c.members?` (${c.members.toLocaleString()})`:''}</option>`).join('');
 }
 
-// ── controls ──────────────────────────────────────────
+// ── controls ─────────────────────────────────────────────────
 async function startForward() {
     const sources = [...selected];
     const dest = $('destSelect').value;
@@ -256,7 +295,7 @@ async function startForward() {
     logCount = 0;
 
     try {
-        const d = await apiFetch('/api/forward/start', {
+        const d = await api('/api/forward/start', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
             body: JSON.stringify({ sources, dest }),
@@ -276,7 +315,7 @@ async function startForward() {
 async function stopForward() {
     $('stopBtn').disabled = true;
     try {
-        await apiFetch('/api/forward/stop', { method: 'POST' });
+        await api('/api/forward/stop', { method: 'POST' });
         forwarding = false;
         setLive(false);
         log('live forwarding stopped', 'err');
@@ -290,7 +329,7 @@ async function stopForward() {
     }
 }
 
-// ── SSE ───────────────────────────────────────────────
+// ── SSE ──────────────────────────────────────────────────────
 function connectSSE() {
     if (evtSrc) evtSrc.close();
     evtSrc = new EventSource('/api/forward/progress');
@@ -320,7 +359,7 @@ function connectSSE() {
     };
 }
 
-// ── ui helpers ────────────────────────────────────────
+// ── ui helpers ────────────────────────────────────────────────
 function setLive(on) {
     $('liveBadge').className = 'live-badge' + (on ? '' : ' off');
     $('liveLabel').textContent = on ? 'live' : 'offline';
@@ -332,7 +371,6 @@ function updateStats(s) {
     $('statFwd').textContent  = s.forwarded || 0;
     $('statFail').textContent = s.failed || 0;
     $('statSrc').textContent  = (s.sources || []).length;
-
     if (s.last_message_at) {
         const t = new Date(s.last_message_at).toLocaleTimeString();
         $('statusLine').innerHTML = `last forwarded at <b>${t}</b>`;
@@ -353,19 +391,23 @@ function log(text, cls) {
 }
 
 function updateTracker(t) {
-    $('trackerTotal').textContent  = t.total_cloned;
+    $('trackerTotal').textContent   = t.total_cloned;
     $('trackerLastRun').textContent = t.last_run ? new Date(t.last_run).toLocaleString() : 'never';
 }
 
 async function pollStatus() {
     try {
-        const d = await apiFetch('/api/status');
+        const d = await api('/api/status');
         if (d.tracker) updateTracker(d.tracker);
     } catch(e) {}
 }
 
-async function apiFetch(url, opts) {
+async function api(url, opts) {
     const res = await fetch(url, opts);
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+        throw new Error(`server returned ${res.status} (not JSON)`);
+    }
     return res.json();
 }
 
