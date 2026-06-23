@@ -654,3 +654,229 @@ async def _standard_transfer(
             log.debug(f"deleted local file: {filename}")
 
     return filename
+
+
+# ============================================================
+# live multi-channel forwarding — watches up to 30 source
+# channels and clones new messages to one destination as they
+# arrive. no history scan, no backlog — purely event-driven.
+# ============================================================
+
+class LiveForwarder:
+    """
+    holds the state for an active live-forwarding session so it
+    can be started/stopped from the web API.
+    """
+
+    def __init__(self):
+        self.client: TelegramClient | None = None
+        self.handler = None
+        self.source_ids: list[int] = []
+        self.dest_entity = None
+        self.tracker: CloneTracker | None = None
+        self.stats = {
+            "forwarded": 0,
+            "failed": 0,
+            "started_at": None,
+            "last_message_at": None,
+            "last_error": None,
+            "last_error_at": None,
+            "sources": [],
+        }
+        self.running = False
+
+    def reset_stats(self):
+        self.stats = {
+            "forwarded": 0,
+            "failed": 0,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "last_message_at": None,
+            "last_error": None,
+            "last_error_at": None,
+            "sources": list(self.source_ids),
+        }
+
+
+async def start_live_forward(
+    client: TelegramClient,
+    source_ids: list[int],
+    dest,
+    tracker: CloneTracker,
+    forwarder: LiveForwarder,
+    progress_callback: Callable[[dict], None] | None = None,
+) -> LiveForwarder:
+    """
+    1. for each source channel, read last_seen_id from Supabase
+    2. fetch and forward any messages newer than that id (catch-up)
+    3. register a NewMessage handler to forward anything that arrives live
+    4. update last_seen_id in Supabase after every forwarded message
+    """
+    from telethon import events
+
+    if forwarder.running:
+        raise RuntimeError("live forwarding is already running — stop it first")
+
+    if len(source_ids) > 30:
+        raise ValueError("max 30 source channels supported")
+
+    dest_entity = await client.get_entity(dest)
+
+    # resolve all source entities up front so telethon "knows" them
+    resolved_sources = []
+    for sid in source_ids:
+        entity = await client.get_entity(sid)
+        resolved_sources.append(entity)
+
+    # init state store
+    try:
+        state_store = ForwardStateStore()
+        log.info("ForwardStateStore connected to Supabase")
+    except Exception as e:
+        log.warning("could not connect ForwardStateStore: %s — last_seen_id won't persist", e)
+        state_store = None
+
+    forwarder.client = client
+    forwarder.source_ids = source_ids
+    forwarder.dest_entity = dest_entity
+    forwarder.tracker = tracker
+    forwarder.reset_stats()
+
+    # -- catch-up pass --
+    # for each source channel, forward any messages posted since we last ran
+    for entity in resolved_sources:
+        channel_id = entity.id
+        last_seen_id = state_store.get_last_seen_id(channel_id) if state_store else 0
+
+        if last_seen_id == 0:
+            log.info(
+                "channel %s (%s): no prior state found — skipping catch-up, watching live from now",
+                channel_id, getattr(entity, "title", channel_id),
+            )
+            # record the current latest message ID so future restarts know where to start
+            history = await client.get_messages(entity, limit=1)
+            if history and history[0]:
+                new_last = history[0].id
+                if state_store:
+                    state_store.set_last_seen_id(channel_id, new_last)
+                log.info("channel %s: set initial last_seen_id to %s", channel_id, new_last)
+            continue
+
+        log.info(
+            "channel %s (%s): catching up from message id %s",
+            channel_id, getattr(entity, "title", channel_id), last_seen_id,
+        )
+        caught_up = 0
+        async for message in client.iter_messages(entity, min_id=last_seen_id, reverse=True):
+            try:
+                await _clone_message(
+                    client, message, dest_entity, tracker,
+                    channel_id, {}, None,
+                )
+                forwarder.stats["forwarded"] += 1
+                forwarder.stats["last_message_at"] = datetime.now(timezone.utc).isoformat()
+                caught_up += 1
+                if state_store:
+                    state_store.set_last_seen_id(channel_id, message.id)
+            except Exception as e:
+                forwarder.stats["failed"] += 1
+                forwarder.stats["last_error"] = str(e)
+                forwarder.stats["last_error_at"] = datetime.now(timezone.utc).isoformat()
+                log.error("catch-up: failed to forward msg #%s from %s: %s", message.id, channel_id, e)
+
+            if progress_callback:
+                progress_callback(forwarder.stats.copy())
+
+        log.info("channel %s: catch-up done — forwarded %s missed messages", channel_id, caught_up)
+
+    # -- live handler --
+    async def _on_new_message(event):
+        message = event.message
+        source_id = event.chat_id
+
+        try:
+            await _clone_message(
+                client, message, dest_entity, tracker,
+                source_id, {}, None,
+            )
+            forwarder.stats["forwarded"] += 1
+            forwarder.stats["last_message_at"] = datetime.now(timezone.utc).isoformat()
+            if state_store:
+                state_store.set_last_seen_id(source_id, message.id)
+            log.info("forwarded msg #%s from chat %s", message.id, source_id)
+        except Exception as e:
+            forwarder.stats["failed"] += 1
+            forwarder.stats["last_error"] = str(e)
+            forwarder.stats["last_error_at"] = datetime.now(timezone.utc).isoformat()
+            log.error("failed to forward msg #%s from chat %s: %s", message.id, source_id, e)
+
+        if progress_callback:
+            progress_callback(forwarder.stats.copy())
+
+    event_builder = events.NewMessage(chats=resolved_sources)
+    client.on(event_builder)(_on_new_message)
+    forwarder.handler = (_on_new_message, event_builder)
+    forwarder.running = True
+
+    log.info(
+        "live forwarding started: watching %d source(s) -> %s",
+        len(resolved_sources), getattr(dest_entity, "title", dest),
+    )
+
+    return forwarder
+
+
+def stop_live_forward(client: TelegramClient, forwarder: LiveForwarder) -> None:
+    """unregister the event handler and mark the forwarder as stopped."""
+    if not forwarder.running or forwarder.handler is None:
+        return
+
+    callback, event_builder = forwarder.handler
+    client.remove_event_handler(callback, event_builder)
+    forwarder.running = False
+    forwarder.handler = None
+    log.info("live forwarding stopped")
+
+
+# ============================================================
+# forward state store — persists last-seen message ID per
+# source channel in Supabase so catch-up works after restarts.
+# ============================================================
+
+class ForwardStateStore:
+    """reads/writes last_seen_id per channel to Supabase."""
+
+    def __init__(self):
+        from supabase import create_client
+        from config import SUPABASE_URL, SUPABASE_KEY
+        self._client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        self._table = "forward_state"
+
+    def get_last_seen_id(self, channel_id: int) -> int:
+        """return the last forwarded message ID for this channel, or 0 if never seen."""
+        try:
+            res = (
+                self._client.table(self._table)
+                .select("last_seen_id")
+                .eq("channel_id", channel_id)
+                .limit(1)
+                .execute()
+            )
+            if res.data:
+                return res.data[0]["last_seen_id"]
+        except Exception as e:
+            log.warning("failed to read last_seen_id for channel %s: %s", channel_id, e)
+        return 0
+
+    def set_last_seen_id(self, channel_id: int, message_id: int) -> None:
+        """update (or insert) the last forwarded message ID for this channel."""
+        try:
+            self._client.table(self._table).upsert(
+                {
+                    "channel_id": channel_id,
+                    "last_seen_id": message_id,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                },
+                on_conflict="channel_id",
+            ).execute()
+        except Exception as e:
+            log.warning("failed to update last_seen_id for channel %s: %s", channel_id, e)
