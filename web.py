@@ -330,6 +330,14 @@ def api_forward_start():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+        # save config so it auto-restarts on next boot
+        try:
+            from cloner import ForwardStateStore
+            state_store = ForwardStateStore()
+            state_store.save_config(source_ids, dest_id if isinstance(dest_id, int) else 0)
+        except Exception as e:
+            log.warning("could not save forward config: %s", e)
+
     return jsonify({"message": "live forwarding started", "sources": source_ids})
 
 
@@ -399,6 +407,29 @@ for _sig in (signal.SIGINT, signal.SIGTERM):
 with app.app_context():
     if API_ID and API_HASH:
         _start_telethon()
+        # auto-start live forwarding if a config was saved from the previous run
+        try:
+            from cloner import ForwardStateStore
+            state_store = ForwardStateStore()
+            saved = state_store.load_config()
+            if saved:
+                log.info(
+                    "auto-starting live forward from saved config: %d sources -> dest %s",
+                    len(saved["source_ids"]), saved["dest_id"],
+                )
+                tracker = create_tracker()
+                _run_async(start_live_forward(
+                    _client,
+                    saved["source_ids"],
+                    saved["dest_id"],
+                    tracker,
+                    _forwarder,
+                    progress_callback=_broadcast_forward_progress,
+                ))
+            else:
+                log.info("no saved forward config found — waiting for manual start")
+        except Exception as e:
+            log.warning("auto-start failed: %s — manual start required", e)
     else:
         log.warning("API_ID/API_HASH not set — telethon won't connect")
 
