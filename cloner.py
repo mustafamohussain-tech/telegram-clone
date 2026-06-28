@@ -880,3 +880,39 @@ class ForwardStateStore:
             ).execute()
         except Exception as e:
             log.warning("failed to update last_seen_id for channel %s: %s", channel_id, e)
+
+    def save_config(self, source_ids: list[int], dest_id: int) -> None:
+        """persist the active forwarding config so it survives restarts."""
+        try:
+            self._client.table("forward_config").upsert(
+                {
+                    "id": 1,
+                    "source_ids": source_ids,
+                    "dest_id": dest_id,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                },
+                on_conflict="id",
+            ).execute()
+            log.info("forward config saved to Supabase (%d sources)", len(source_ids))
+        except Exception as e:
+            log.warning("failed to save forward config: %s", e)
+
+    def load_config(self) -> dict | None:
+        """load the last saved forwarding config, or None if not set."""
+        try:
+            res = (
+                self._client.table("forward_config")
+                .select("source_ids,dest_id")
+                .eq("id", 1)
+                .limit(1)
+                .execute()
+            )
+            if res.data:
+                row = res.data[0]
+                source_ids = [int(x) for x in row["source_ids"]]
+                dest_id = int(row["dest_id"])
+                if source_ids and dest_id:
+                    return {"source_ids": source_ids, "dest_id": dest_id}
+        except Exception as e:
+            log.warning("failed to load forward config: %s", e)
+        return None
